@@ -24,7 +24,7 @@ export class ImageExtend {
     /**
      * @param quill {Quill}富文本实例
      * @param config {Object} options
-     * config  keys: action, headers, editForm start end error  size response
+     * config  keys: action, headers, editForm start end error  size response drop
      */
     constructor(quill, config = {}) {
         this.id = Math.random()
@@ -34,10 +34,13 @@ export class ImageExtend {
         this.file = ''  // 要上传的图片
         this.imgURL = ''  // 图片地址
         quill.root.addEventListener('paste', this.pasteHandle.bind(this), false)
-        quill.root.addEventListener('drop', this.dropHandle.bind(this), false)
-        quill.root.addEventListener('dropover', function (e) {
-            e.preventDefault()
-        }, false)
+        if(this.config.canDrop) { // 可拖拽上传
+            quill.root.addEventListener('drop', this.dropHandle.bind(this), false)
+            quill.root.addEventListener('dropover', function (e) {
+                e.preventDefault()
+            }, false)
+        }
+        
         this.cursorIndex = 0
         QuillWatch.on(this.id, this)
     }
@@ -127,7 +130,7 @@ export class ImageExtend {
     /**
      * @description 上传图片到服务器
      */
-    uploadImg() {
+    async uploadImg() {
         const self = this
         let quillLoading = self.quillLoading
         let config = self.config
@@ -147,6 +150,13 @@ export class ImageExtend {
         }
         if (config.change) {
             config.change(xhr, formData)
+        }
+        if (config.beforeUpload) {
+            try {
+                await config.beforeUpload(xhr, formData)
+            } catch (error) {
+                this.config.error()
+            }
         }
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {

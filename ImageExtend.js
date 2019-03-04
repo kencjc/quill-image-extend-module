@@ -207,11 +207,17 @@ export class ImageExtend {
      * @description 往富文本编辑器插入图片
      */
     insertImg() {
-        const self = this
-        self.quill.blur()
-        let length = (this.quill.getSelection() || {}).index || this.quill.getLength()
-        self.quill.insertEmbed(length, 'image', self.imgURL, 'user')
-        self.quill.setSelection(length + 1)
+        // const self = this
+        // self.quill.blur()
+        // let length = (this.quill.getSelection() || {}).index || this.quill.getLength()
+        // self.quill.insertEmbed(length, 'image', self.imgURL, 'user')
+        // self.quill.setSelection(length + 1)
+        const self = QuillWatch.active // 
+        self.quill.insertEmbed(QuillWatch.active.cursorIndex, 'image', self.imgURL) // 获取文本的光标位置 
+        let cursorIndex = self.quill.selection.lastRange.index // 插入图片 
+        self.quill.insertEmbed(cursorIndex, 'image', self.imgURL) 
+        self.quill.update() 
+        self.quill.setSelection(cursorIndex+1); 
     }
 
 }
